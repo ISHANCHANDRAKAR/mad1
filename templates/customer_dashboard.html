@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Customer Dashboard</title>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- Header Section -->
+        <header class="text-center mb-5">
+            <h2 class="fw-bold text-primary">Customer Dashboard</h2>
+            <p class="text-muted">Welcome, <span class="fw-semibold text-dark">{{ user.name }}</span>!</p>
+        </header>
+
+        <!-- Pending Requests Section -->
+        <section class="mb-5">
+            <h3 class="text-primary">Pending Requests</h3>
+            {% if active_bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover mt-3 align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Service Name</th>
+                            <th>Request Requirements</th>
+                            <th>Professional Name</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request, service_name, professional_name in active_bookings %}
+                        <tr>
+                            <td class="fw-semibold">{{ service_name }}</td>
+                            <td>{{ request.requirements }}</td>
+                            <td>{{ professional_name if professional_name else "Pending Assignment" }}</td>
+                            <td>{{ request.service_date }}</td>
+                            <td>{{ request.service_time | capitalize }}</td>
+                            <td>
+                                <span class="badge {{ 'bg-warning' if request.status == 'Pending' else 'bg-success' }}">
+                                    {{ request.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    {% if request.status == 'Pending' %}
+                                    <a href="/customer/edit_booking/{{ request.request_id }}" class="btn btn-sm btn-outline-warning">Edit</a>
+                                    <form action="/customer/cancel_booking/{{ request.request_id }}" method="POST" onsubmit="return confirmCancel('{{ service_name }}')" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No pending requests. <a href="/customer/list_services" class="text-primary fw-semibold">Book a service now!</a></p>
+            {% endif %}
+        </section>
+
+        <!-- Active Requests Section -->
+        <section class="mb-5">
+            <h3 class="text-success">Active Requests</h3>
+            {% if active_or_fulfilled_bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover mt-3 align-middle">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Service Name</th>
+                            <th>Request Requirements</th>
+                            <th>Professional Name</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request, service_name, professional_name in active_or_fulfilled_bookings %}
+                        <tr>
+                            <td class="fw-semibold">{{ service_name }}</td>
+                            <td>{{ request.requirements }}</td>
+                            <td>{{ professional_name }}</td>
+                            <td>{{ request.service_date }}</td>
+                            <td>{{ request.service_time | capitalize }}</td>
+                            <td>
+                                <span class="badge {{ 'bg-info' if request.status == 'To Be Attended' else 'bg-secondary' }}">
+                                    {{ request.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    {% if request.status == 'To Be Attended' %}
+                                    <!-- Mark as Fulfilled button -->
+                                    <form action="/customer/mark_fulfilled/{{ request.request_id }}" method="POST" class="d-inline" onsubmit="return confirmFulfill('{{ service_name }}')">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mark as Fulfilled</button>
+                                    </form>
+                                    {% elif request.status == 'Fulfilled' %}
+                                    <!-- Feedback button -->
+                                    <a href="/customer/feedback/{{ request.request_id }}" class="btn btn-sm btn-outline-info">Give Feedback</a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No active or fulfilled requests currently.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoA6L2kUQVnto84p1cfPfwAChXQ1PKzP0y+Uu0KluzKyTUr" crossorigin="anonymous"></script>
+</body>
+</html>
+
+    
