@@ -8,12 +8,18 @@
 	<title>Login</title>
 </head>
 <body>
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="botton" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
 
 <div class="d-flex justify-content-center align-items-center" style="height: 110vh;">
   <div class="col-md-4 mt-2 border border-secondary rounded">
     <div class="row">
-      <h2 class="text-center mt-3 mb-2">Customer Registration</h2>
-      <form method="POST">
+      <h2 class="text-center mt-3 mb-3">Customer Registration</h2>
+      <form action="/customer_register" method="POST">
       	 <div class="form-floating mb-2">
           <input type="email" class="form-control" id="Email" name="email" placeholder="name@example.com" required>
           <label for="Email">Email address</label>
@@ -24,35 +30,33 @@
           <label for="FullName">Full Name</label>
         </div>
        
-        <div class="form-floating mb-2">
+        <div class="form-floating mb-3">
           <input type="password" class="form-control" id="Password" name="password" placeholder="Password" required>
           <label for="Password">Password</label>
         </div>
 
-        <div class="form-floating mb-2">
+        <div class="form-floating mb-1">
           <input type="mobile_no." class="form-control" id="Mobile_no." name="mobile_no" placeholder="Mobile_no" required>
           <label for="Mobile_no">Mobile_no.</label>
         </div>
         
 
-		<div class="mb-3">
-		  <label for="address" class="form-label">Address</label>
-		  <textarea class="form-control" id="address" rows="3"></textarea>
-		</div>
+  		<div class="mb-3">
+  		  <label for="address" class="form-label"></label>
+  		  <textarea class="form-control" name="location" id="address" placeholder="Address"  rows="3"></textarea>
+  		</div>
 
-        <div class="form-floating mb-2">
-          <input type="state" class="form-control" id="State" name="state" placeholder="State" >
-          <label for="State">State</label>
-        </div>
+     
 
-        <div class="form-floating mb-2">
-          <input type="int" class="form-control" id="Pincode" name="pincode" placeholder="Password" required>
-          <label for="Pincode">Pincode</label>
-        </div>
+      <div class="form-floating mb-2">
+        <input type="int" class="form-control" id="Pincode" name="pincode" placeholder="Password" required>
+        <label for="Pincode">Pincode</label>
+      </div>
 
 
         <div class="row">
           <button type="submit" class="btn btn-dark mb-1 mx-auto" style="width:200px">Register</button>
+          <div class="text-success">{{msg}}</div>
         </div>
       </form>
     </div>

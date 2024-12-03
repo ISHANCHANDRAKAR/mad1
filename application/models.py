@@ -1,45 +1,22 @@
-#Data models
-
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy 
-#create instance of the database
-db=SQLAlchemy()
 
-#First entity
+db = SQLAlchemy()
+
 class Customer_Info(db.Model):
-	__tablename__="customers"
-	 # Primary Key
-    customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    
-    # Basic Information
-    name = db.Column(db.String(100), nullable=False)  # Name cannot be null
-    email_id = db.Column(db.String(150), unique=True, nullable=False)  # Unique to avoid duplicates
-    # password_hash = db.Column(db.String(128), nullable=False)  # Store hashed passwords
-    password=db.Column(db.String, nullable=False)
+	__tablename__ = 'customers'
+	customer_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	name = db.Column(db.String(100), nullable=False)
+	email_id = db.Column(db.String(150), unique=True, nullable=False)
+	password=db.Column(db.String, nullable=False)
+	address = db.Column(db.Text, nullable=True)
+	pincode = db.Column(db.String(6), nullable=False)
+	date_created = db.Column(db.DateTime, default=datetime.utcnow)
+	is_blocked = db.Column(db.Boolean, default=False)
+	service_requests = db.relationship('ServiceRequested', backref='customers', lazy=True)
 
-    # Address and Location
-    address = db.Column(db.Text, nullable=True)  # Optional detailed address
-    pincode = db.Column(db.String(6), nullable=False)  # Assumes 6-digit Indian pin codes
-    
-    # Metadata
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)  # Automatically sets the creation date
-    is_blocked = db.Column(db.Boolean, default=False)  # Defaults to unblocked
-
-    # Relationships (Optional for linking to service requests)
-    # service_requests = db.relationship('ServiceRequested', backref='customer', lazy=True)
-    
-    #Customer.requests = db.relationship('ServiceRequest', back_populates='customer', lazy=True)
-    # Methods
-    #def set_password(self, password):
-        """Hash and set the user's password."""
-        #self.password_hash = generate_password_hash(password)
-
-    #def check_password(self, password):
-        """Verify the user's password."""
-        #return check_password_hash(self.password_hash, password)
-
-    def __repr__(self):
-        return f"<Customer {self.name} - {self.email_id}>"
-
+	def __repr__(self):
+		return f'<Customer {self.name} - {self.email_id}>'
 
 #Second Entity Professionals
 class Professional(db.Model):
@@ -52,6 +29,8 @@ class Professional(db.Model):
     name = db.Column(db.String(100), nullable=False)  # Full name of the professional
     email_id = db.Column(db.String(150), unique=True, nullable=False)  # Unique email for login
     password=db.Column(db.String, nullable=False)
+    govt_id=db.Column(db.String, nullable=True)
+    mobile_no=db.Column(db.Integer, nullable=True)
     #password_hash = db.Column(db.String(128), nullable=False)  # Hashed password
 
     # Service Details
@@ -74,15 +53,16 @@ class Professional(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)  # Automatically sets the creation timestamp
 
     # Relationships
-    #service_requests = db.relationship('ServiceRequested', backref='professional', lazy=True)
+    service_requests = db.relationship('ServiceRequested', backref='professionals', lazy=True)
+    #service = db.relationship('Service', back_populates='professionals', lazy=True)
     #Professional.assigned_requests = db.relationship('ServiceRequest', back_populates='professional', lazy=True)
     # Methods
     #def set_password(self, password):
-        """Hash and set the professional's password."""
+        #Hash and set the professional's password.
         #self.password_hash = generate_password_hash(password)
 
     #def check_password(self, password):
-        """Verify the professional's password."""
+        #Verify the professional's password.
         #return check_password_hash(self.password_hash, password)
 
 # Computed Properties
@@ -112,45 +92,31 @@ class Professional(db.Model):
     def __repr__(self):
         return f"<Professional {self.name} - {self.email_id}>"
 
-
 class Service(db.Model):
-    __tablename__ = 'services'  # Table name in the database
-
-    service_id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # Primary key
-    service_name = db.Column(db.String(255), nullable=False)  # Name of the service
-    description = db.Column(db.Text)  # Description of the service
-    base_price = db.Column(db.Numeric(10, 2), nullable=False)  # Base price for the service
-    time_required = db.Column(db.Integer, nullable=False)  # Time required in minutes
-    #category = db.Column(db.String(100))  # Optional category for the service
-    #rating = db.Column(db.Numeric(3, 2), default=0)  # Average rating (optional)
-    #total_requests = db.Column(db.Integer, default=0)  # Total service requests made
-    creation_date = db.Column(db.DateTime, default=db.func.current_timestamp())  # Timestamp when service is created
-   	#Service.requests = db.relationship('ServiceRequest', back_populates='services', lazy=True)
-
+	__tablename__ = 'services'
+	service_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	service_name = db.Column(db.String(255), nullable=False, unique=True)
+	description = db.Column(db.Text)
+	base_price = db.Column(db.Numeric(10, 2), nullable=False)
+	time_required = db.Column(db.Integer, nullable=False)
+	creation_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+	professionals = db.relationship('Professional', backref='services', lazy=True)
+	service_requests = db.relationship('ServiceRequested', backref='services', lazy=True)
+	def __repr__(self):
+		return f'<Service {self.service_name} - Price: {self.base_price} - Time: {self.time_required} - Status: {self.service_status}>'
 
 class ServiceRequested(db.Model):
 	__tablename__ = 'service_requests'
-
-    request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('customers.customer_id'), nullable=False)
-    professional_id = db.Column(db.Integer, db.ForeignKey('professionals.professional_id'), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('services.service_id'), nullable=False)
-	requirements = db.Column(db.String(255), nullable=True)  # Customer's service requirements or special requests
-    service_date = db.Column(db.Date, nullable=False)
-    service_time = db.Column(db.String(50), nullable=False)  # Store time in a string format (e.g., "10:00 AM")
-    status = db.Column(db.String(20), nullable=False, default='Pending')  # Example: "Pending", "In Progress", "Completed"
-    rating = db.Column(db.Float, nullable=True)  # Customer rating, optional
-    remarks = db.Column(db.Text, nullable=True)  # Remarks or feedback about the professional
+	request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	customer_id = db.Column(db.Integer, db.ForeignKey('customers.customer_id'), nullable=False)
+	professional_id = db.Column(db.Integer, db.ForeignKey('professionals.professional_id'), nullable=False)
+	service_id = db.Column(db.Integer, db.ForeignKey('services.service_id'), nullable=False)
+	requirements = db.Column(db.String(255), nullable=True)
+	service_date = db.Column(db.Date, nullable=False)
+	service_time = db.Column(db.String(50), nullable=False)
+	status = db.Column(db.String(20), nullable=False, default='Pending')
+	rating = db.Column(db.Float, nullable=True)
+	remarks = db.Column(db.Text, nullable=True)
 	date_requested = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-    # Relationships
-    #service = db.relationship('Service', back_populates='requests')
-    #customer = db.relationship('Customer', back_populates='requests')
-    #professional = db.relationship('Professional', back_populates='assigned_requests', lazy=True)
-    def __repr__(self):
-        return f"<ServiceRequest {self.request_id} - {self.status}>"
-
-
-
-
+	def __repr__(self):
+		return f'<ServiceRequest {self.request_id} - {self.status}>'

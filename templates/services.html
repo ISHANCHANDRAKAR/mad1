@@ -1,0 +1,199 @@
+{%extends "admin_header.html"%}
+{% block title %}Services - Admin Dashboard{% endblock %}
+
+  {% block styles %}
+  <style>
+    body {
+      background-color: #f9f9f9;
+    }
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-add-service {
+      background: linear-gradient(90deg, #ff7e5f, #feb47b);
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-add-service:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    }
+    .search-bar {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 25px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .table th {
+      background-color: #f1f1f1;
+    }
+  </style>
+  {% endblock %}
+{%block content%}
+</head>
+<body>
+  <div class="container my-5">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="text-primary">Services</h1>
+      <button class="btn btn-add-service" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+        <i class="bi bi-plus-circle me-2"></i>Add New Service
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="d-flex justify-content-end mb-4">
+      <input 
+        type="text" 
+        class="form-control search-bar me-2" 
+        id="searchService" 
+        placeholder="Search services..." 
+        onkeyup="searchServices()">
+      <button class="btn btn-outline-primary"><i class="bi bi-search"></i> Search</button>
+    </div>
+
+    <!-- Service List -->
+    <div class="card shadow-sm">
+      <div class="card-header text-center bg-info-subtle text-black fw-bold">
+        List of Available Services
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered table-striped text-center">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Service Name</th>
+              <th>Description</th>
+              <th>Base Price</th>
+              <th>Time Required</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="serviceTable">
+            {%if services%}
+            {%for service in services%}
+           
+                <tr>
+                  <td>{{ service.service_id }}</td>
+                  <td>{{ service.service_name }}</td>
+                  <td>{{ service.description }}</td>
+                  <td>₹{{ service.base_price }}</td>
+                  <td>{{ service.time_required }} hours</td>
+                  <td>
+                    <button class="btn btn-warning btn-edit-service me-2" data-bs-toggle="modal" data-bs-target="#editServiceModal"><i class="bi bi-pencil-fill"></i> Edit</button>
+                    <button class="btn btn-danger btn-sm"><i class="bi bi-trash-fill"></i> Delete</button>
+                  </td>
+                </tr>
+            <!-- Additional rows will be populated dynamically -->
+            {%endfor%}
+            {%else%}
+              <tr>
+                    <td colspan="7" class="text-center text-info-emphasis fw-semibold">No Pending Requests.....</td>
+              </tr>
+            {%endif%}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Service Modal -->
+  <div class="modal fade" id="addServiceModal" tabindex="-1" aria-labelledby="addServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addServiceModalLabel">Add New Service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addServiceForm" action="/admin/services/add" method="POST">
+            <div class="mb-3">
+              <label for="serviceName" class="form-label">Service Name</label>
+              <input type="text" class="form-control" id="serviceName" name="service_name" placeholder="Enter service name" required>
+            </div>
+            <div class="mb-3">
+              <label for="serviceDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="serviceDescription" name="description" rows="3" placeholder="Enter description" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="basePrice" class="form-label">Base Price (₹)</label>
+              <input type="number" class="form-control" id="basePrice" name="base_price" placeholder="Enter base price" required>
+            </div>
+            <div class="mb-3">
+              <label for="timeRequired" class="form-label">Time Required (e.g., 2 Hours)</label>
+              <input type="text" class="form-control" id="timeRequired" name="time_required" placeholder="Enter time required" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Add Service</button>
+            <!-- <<div class="center">{{msg}}</div> -->
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Service Modal -->
+  <div class="modal fade" id="editServiceModal" tabindex="-1" aria-labelledby="editServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editServiceModalLabel">Edit Service</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editServiceForm" action="/admin/services/edit" method="POST">
+            <div class="mb-3">
+              <label for="serviceName" class="form-label">Service Name</label>
+              <input type="text" class="form-control" id="serviceName" name="service_name" placeholder="Enter service name" required>
+            </div>
+            <div class="mb-3">
+              <label for="serviceDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="serviceDescription" name="description" rows="3" placeholder="Enter description" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="basePrice" class="form-label">Base Price (₹)</label>
+              <input type="number" class="form-control" id="basePrice" name="base_price" placeholder="Enter base price" required>
+            </div>
+            <div class="mb-3">
+              <label for="timeRequired" class="form-label">Time Required (e.g., 2 Hours)</label>
+              <input type="text" class="form-control" id="timeRequired" name="time_required" placeholder="Enter time required" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Add Service</button>
+            <!-- <<div class="center">{{msg}}</div> -->
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Example search function for client-side filtering
+    function searchServices() {
+      const input = document.getElementById("searchService").value.toLowerCase();
+      const table = document.getElementById("serviceTable");
+      const rows = table.getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName("td");
+        if (cells.length > 0) {
+          const serviceName = cells[1].textContent.toLowerCase();
+          if (serviceName.includes(input)) {
+            rows[i].style.display = "";
+          } else {
+            rows[i].style.display = "none";
+          }
+        }
+      }
+    }
+  </script>
+
+
+</body>
+</html>
+{%endblock%}

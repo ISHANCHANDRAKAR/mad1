@@ -13,7 +13,7 @@
   <div class="col-md-4 mt-2 border border-secondary rounded">
     <div class="row">
       <h2 class="text-center mt-3 mb-2">Professional Registration</h2>
-      <form method="POST">
+      <form action="/professional_register" method="POST">
       	 <div class="form-floating mb-2">
           <input type="email" class="form-control" id="Email" name="email" placeholder="name@example.com" required>
           <label for="Email">Email address</label>
@@ -38,7 +38,7 @@
           <label for="Mobile_no">Mobile_no.</label>
         </div>
         <div class="mb-3">
-          <select class="form-select" name="service_name" required>
+          <select class="form-select" name="service_id" required>
               <option value="" disabled selected>Service Name</option>
               <option value="1">One</option>
               <option value="2">Two</option>
@@ -53,15 +53,12 @@
 
       	<div class="mb-3">
       	  
-      	  <textarea class="form-control" name="address" rows="3" placeholder="Address" required></textarea>
+      	  <textarea class="form-control" name="location" rows="3" placeholder="Address" required></textarea>
       	</div>
 
 
 
-        <div class="form-floating mb-2">
-          <input type="state" class="form-control" id="State" name="state" placeholder="State" >
-          <label for="State">State</label>
-        </div>
+       
 
         <div class="form-floating mb-2">
           <input type="int" class="form-control" id="Pincode" name="pincode" placeholder="Password" required>
@@ -71,6 +68,7 @@
 
         <div class="row">
           <button type="submit" class="btn btn-dark mb-1 mx-auto" style="width:200px">Register</button>
+          <div class="text-success">{{msg}}</div>
         </div>
       </form>
     </div>
